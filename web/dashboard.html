@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>T&H CAPTORS 3000 - Dashboard</title>
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Tableau de bord</h1>
+    <button id="logoutBtn">Déconnexion</button>
+  </header>
+
+  <main>
+    <section>
+      <h2>Liste des relevés</h2>
+      <div id="measurements"></div>
+    </section>
+  </main>
+
+  <script src="scripts/main.js"></script>
+  <script>
+    const measurementsDiv = document.getElementById("measurements");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // Au chargement de la page, vérifier si le token est présent
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // Si pas de token alors redirection vers la page de login
+        window.location.href = "login.html";
+      } else {
+        fetchMeasurements(token);
+      }
+    });
+
+    // Déconnexion
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    });
+
+    async function fetchMeasurements(token) {
+      try {
+        const response = await fetch("http://localhost:3000/data", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          let html = "<ul>";
+          data.forEach((m) => {
+            const dateStr = new Date(m.timestamp).toLocaleString();
+            html += `<li>${dateStr} | Temp: ${m.temperature}°C | Hum: ${m.humidity}%</li>`;
+          });
+          html += "</ul>";
+          measurementsDiv.innerHTML = html;
+        } else {
+          measurementsDiv.innerHTML = "<p>Erreur lors de la récupération des données</p>";
+        }
+      } catch (error) {
+        measurementsDiv.innerHTML = "<p>Erreur réseau ou serveur</p>";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>T&H CAPTORS 3000 - Connexion</title>
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+<body>
+  <header>
+    <h1>T&H CAPTORS 3000</h1>
+  </header>
+
+  <main>
+    <section>
+      <h2>Connexion</h2>
+      <form id="loginForm">
+        <div>
+          <label for="email">Email</label>
+          <input type="email" id="email" required />
+        </div>
+        <div>
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" required />
+        </div>
+        <button type="submit">Se connecter</button>
+      </form>
+      <p id="errorMsg" style="color: red;"></p>
+    </section>
+  </main>
+
+  <script src="scripts/main.js"></script>
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("http://localhost:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Stocker le token dans localStorage
+          localStorage.setItem("token", data.token);
+          // Redirection vers le dashboard
+          window.location.href = "dashboard.html";
+        } else {
+          const errorData = await response.json();
+          errorMsg.innerText = errorData.message || "Erreur de connexion.";
+        }
+      } catch (error) {
+        errorMsg.innerText = "Erreur réseau ou serveur.";
+      }
+    });
+  </script>
+</body>
+</html>
